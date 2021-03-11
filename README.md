@@ -7,6 +7,8 @@
     - [Remote environment](#remote-environment)
   - [Filters](#filters)
     - [dot .](#dot-)
+    - [Array []](#array-)
+    - [Pipe |](#pipe-)
 
 
 ## Introduction
@@ -124,10 +126,43 @@ jq .count jq_rmk.json
 359
 ```
 
-If you want to access a nested object, you need to chain the filter. The array `[]` operator will be explained in next section.
+If you want to access a nested object, you need to chain the filter. For example you would use the following structure to access the `self` key inside the first item in an rray that is inside `artObjects` object. The array `[]` operator will be explained in next section.
 ```bash
 jq '.artObjects[0].links.self' jq_rmk.json
 "https://www.rijksmuseum.nl/api/nl/collection/SK-C-5"
 ```
 
+### Array []
+
+In the previous example, we encouterd an array object `.artObjects`. We used the element id to access the first object in this array `.artObjects[]`. If you want to access the second element, just increase the reference number.
+```bash
+jq '.artObjects[1]'  jq_rmk.json
+{
+  "links": {
+    "self": "https://www.rijksmuseum.nl/api/nl/collection/SK-A-1505",
+    "web": "https://www.rijksmuseum.nl/nl/collectie/SK-A-1505"
+  },
+  "id": "nl-SK-A-1505",
+  "objectNumber": "SK-A-1505"
+...
+# Omited for brevity
+...
+```
+
+### Pipe |
+
+The pipe, you can combine several operators together. For example if you want to retrieve value of `id` key in each object inside `.artObject` array you would use the followin syntax.
+```bash
+jq '.artObjects[] | .id jq_rmk.json
+"nl-SK-C-5"
+"nl-SK-A-1505"
+"nl-SK-A-180"
+"nl-SK-A-2205"
+"nl-SK-A-1923"
+"nl-SK-A-1935"
+"nl-SK-A-690"
+"nl-SK-A-2983"
+"nl-SK-A-3924"
+"nl-SK-A-3246"
+```
 
