@@ -9,6 +9,7 @@
     - [dot .](#dot-)
     - [Array []](#array-)
     - [Pipe |](#pipe-)
+    - [Filter select()](#filter-select)
 
 
 ## Introduction
@@ -164,5 +165,14 @@ jq '.artObjects[] | .id jq_rmk.json
 "nl-SK-A-2983"
 "nl-SK-A-3924"
 "nl-SK-A-3246"
+```
+
+### Filter select()
+
+This filter is very useful when you need to filter output based on some condition. For example, if you need to only select object `.id` from ones that have atleast one value in `productionPlaces` array.
+```bash
+jq '.artObjects[] | select(.productionPlaces | length >= 1) | .id' jq_rmk.json
+"nl-SK-C-5"
+"nl-SK-A-3924"
 ```
 
