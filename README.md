@@ -2,6 +2,11 @@
 - [jq-cookbook](#jq-cookbook)
   - [Introduction](#introduction)
   - [Documentation](#documentation)
+  - [Environment](#environment)
+    - [Local environment](#local-environment)
+    - [Remote environment](#remote-environment)
+  - [Filters](#filters)
+    - [dot .](#dot-)
 
 
 ## Introduction
@@ -26,7 +31,8 @@ Please note that most of API endpoints will involve some sort of authentication.
 ```bash
 curl https://www.rijksmuseum.nl/api/nl/collection?key=[api-key]&involvedMaker=Rembrandt+van+Rijn
 ```
-Generates the following answer, which I have stripped for brevity.
+
+Generates the following answer, which I have stripped for brevity and formated it for easier interpretation.
 ```json
 {
   "elapsedMilliseconds": 0,
@@ -75,7 +81,53 @@ Wouldn't it be great if there is a tool that is able to filter only the informat
 
 ## Documentation
 
+I have found the following websites very useful when learning to use jQeury.
+
 - [jQuery Project](https://jquery.com/)
 - [Json and Jq](https://programminghistorian.org/en/lessons/json-and-jq)
 - [Rijks Museum Object medata APIs](https://data.rijksmuseum.nl/object-metadata/api/)
+
+## Environment
+
+When it comes to learning environemnt, you have a choice of using our own local machine with required binaries or you can use remote web-based version of jQuery. For "production" use I recommend local environemnt as it can handle higher load and provides some level of confidentiality.
+
+### Local environment
+
+You can find jQuery included in most of the popular package managers. For Windows I am using [Chocolatey](https://chocolatey.org/)
+
+```powershell
+choco install jq
+jq --version
+jq-1.6
+```
+
+For Ubuntu, you can use apt
+```bash
+apt-get install jq
+jq --version
+jq-1.6
+```
+
+### Remote environment
+
+The remote environment is available at [jQPlay](https://jqplay.org/) website. It provides a cheatsheet which may be handy while getting familiar with the tool.
+
+## Filters
+
+Filtering is one of the core capability of jQeury. Filters dictate how you want to transform the input data. We will be using sample JSON file `jq_rkm.json` available at `dataset` folder.
+
+### dot .
+
+The dot `.` without any paramters leaves output unmodified. However if you add name of the key to it, it will filter return value of that key.
+```bash
+jq .count jq_rmk.json
+359
+```
+
+If you want to access a nested object, you need to chain the filter. The array `[]` operator will be explained in next section.
+```bash
+jq '.artObjects[0].links.self' jq_rmk.json
+"https://www.rijksmuseum.nl/api/nl/collection/SK-C-5"
+```
+
 
