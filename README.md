@@ -16,6 +16,10 @@
     - [JSON and JSON Lines](#json-and-json-lines)
     - [Relationships: One-to-Many](#relationships-one-to-many)
       - [One row per tweet](#one-row-per-tweet)
+      - [One row per hashtag](#one-row-per-hashtag)
+    - [Grouping and Counting](#grouping-and-counting)
+      - [Extracting user data](#extracting-user-data)
+      - [Couting Twitter hashtags](#couting-twitter-hashtags)
 
 
 ## Introduction
@@ -403,7 +407,36 @@ jq -r '{id: .id, hashtags: .entities.hashtags}
 /* Output omitted*/
 ```
 
+#### One row per hashtag
 
+Lets tart with the previous filter which gave us tweet id and hashtags.
+```json
+jq '{id: .id, hashtags: .entities.hashtags} 
+  | {id: .id, hashtags: .hashtags[].text}' \
+  jq_twitter.json
+```
+
+The result is one id and one hashtag per object. Before you can convert it to CSV you need to create an array using another query `[.id, .hashtags]`. Finally, don't remember to add `-r` option for raw output.
+```json
+jq -r '{id: .id, hashtags: .entities.hashtags} 
+  | {id: .id, hashtags: .hashtags[].text}
+  | [.id, .hashtags]
+  | @csv' \
+  jq_twitter.json
+/* Output omitted*/
+501064196931330050,"MikeBrown"
+501064197632167940,"Ferguson"
+501064197632167940,"tcot"
+501064197632167940,"uniteblue"
+/* Output omitted*/
+```
+
+
+### Grouping and Counting
+
+#### Extracting user data
+
+#### Couting Twitter hashtags
 
 
 
