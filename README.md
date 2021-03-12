@@ -12,6 +12,10 @@
     - [Filter select()](#filter-select)
     - [New JSON [] and {}](#new-json--and-)
     - [CSV Output @csv](#csv-output-csv)
+  - [Advanced operations](#advanced-operations)
+    - [JSON and JSON Lines](#json-and-json-lines)
+    - [Relationships: One-to-Many](#relationships-one-to-many)
+      - [One row per tweet](#one-row-per-tweet)
 
 
 ## Introduction
@@ -90,8 +94,10 @@ I have found the following websites very useful when learning to use jQeury.
 
 - [jQuery Project](https://jquery.com/)
 - [Conditionals and Comparisons](https://stedolan.github.io/jq/manual/#ConditionalsandComparisons)
+- [Twarc](https://github.com/DocNow/twarc)
 - [Json and Jq](https://programminghistorian.org/en/lessons/json-and-jq)
 - [Rijks Museum Object medata APIs](https://data.rijksmuseum.nl/object-metadata/api/)
+- [NYPL Collections](https://github.com/NYPL-publicdomain/data-and-utilities/tree/master/items)
 
 ## Environment
 
@@ -266,6 +272,136 @@ To format the above output into CSV format, simple add `@csv` at the end of the 
 ```
 
 
+## Advanced operations
+
+### JSON and JSON Lines
+
+So far we have been working with JSON objects, which are known for having single JSON object that contains many smaller sub objects. 
+
+Now we are going to explore [Twitter API](https://dev.twitter.com/overview/api), which in contrast returns JSON Lines which have multiple separate JSON objects each on one single line, not wrapped by `[]`.
+
+For demostration, we will be using sample file `jq_twitter.json` provided by programminghistorian.org.
+
+### Relationships: One-to-Many
+
+In this example, we will create a table that maps a tweet to its hashtags. There are two general solutions available:
+- One row per tweet with multiple hashtags in the same cell
+- One row per hashtag/tweet combination, with tweet IDs and hashtags repeated as necessary
+
+#### One row per tweet
+
+Start by creating a filter that will reduce the Twitter JSON to display just `.id` and `hashtags`.
+```json
+jq '{id: .id, hashtags: .entities.hashtags}' jq_twitter.json
+{
+  "id": 501064141332029440,
+  "hashtags": [
+    {
+      "indices": [
+        41,
+        50
+      ],
+      "text": "Ferguson"
+    }
+  ]
+}
+/*Output omitted*/
+```
+
+Chain another query to show just `text` value inside `hashtags` object.
+```json
+jq '{id: .id, hashtags: .entities.hashtags} | {id: .id, hashtags: .hashtags[].text}' jq_twitter.json
+{
+  "id": 501064141332029440,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064171707170800,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064180468682750,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064194309906400,
+  "hashtags": "USNews"
+}
+{
+  "id": 501064196931330050,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064196931330050,
+  "hashtags": "MikeBrown"
+}
+/*Output omitted*/
+```
+
+THe hastag id `501064196931330050` id displayed twice as it has two different hashtags. We need to combine it and show hastags as array.
+```json
+jq '{id: .id, hashtags: .entities.hashtags} | {id: .id, hashtags: [.hashtags[].text]}' jq_twitter.json \
+   | grep -B1 -A5 501064196931330050
+{
+  "id": 501064196931330050,
+  "hashtags": [
+    "Ferguson",
+    "MikeBrown"
+  ]
+}
+```
+
+Before we can express this result in CSV format, we need to add delimiter to hashtags array.
+```json
+jq '{id: .id, hashtags: .entities.hashtags}
+  | {id: .id, hashtags: [.hashtags[].text]}
+  | {id: .id, hashtags: .hashtags | join(";")}' \
+  jq_twitter.json
+/* Output omitted*/
+{
+  "id": 501064201251880960,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064201256071200,
+  "hashtags": "Ferguson"
+}
+{
+  "id": 501064201503113200,
+  "hashtags": "MikeBrown;Ferguson"
+}
+/* Output omitted*/
+```
+
+And now convert to CSV.
+```json
+jq '{id: .id, hashtags: .entities.hashtags}
+  | {id: .id, hashtags: [.hashtags[].text]}
+  | {id: .id, hashtags: .hashtags | join(";")}
+  | [.id, .hashtags]
+  | @csv' \
+  jq_twitter.json
+/* Output omitted*/
+"501064201251880960,\"Ferguson\""
+"501064201256071200,\"Ferguson\""
+"501064201503113200,\"MikeBrown;Ferguson\""
+/* Output omitted*/
+```
+
+To remove the forward slashes, use `-r` option, which denotes raw output.
+```json
+jq -r '{id: .id, hashtags: .entities.hashtags}
+  | {id: .id, hashtags: [.hashtags[].text]}
+  | {id: .id, hashtags: .hashtags | join(";")}
+  | [.id, .hashtags]
+  | @csv' \
+  jq_twitter.json
+/* Output omitted*/
+501064201251880960,"Ferguson"
+501064201256071200,"Ferguson"
+501064201503113200,"MikeBrown;Ferguson"
+/* Output omitted*/
+```
 
 
 
