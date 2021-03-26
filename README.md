@@ -17,9 +17,6 @@
     - [Relationships: One-to-Many](#relationships-one-to-many)
       - [One row per tweet](#one-row-per-tweet)
       - [One row per hashtag](#one-row-per-hashtag)
-    - [Grouping and Counting](#grouping-and-counting)
-      - [Extracting user data](#extracting-user-data)
-      - [Couting Twitter hashtags](#couting-twitter-hashtags)
 
 
 ## Introduction
@@ -109,7 +106,7 @@ When it comes to learning environemnt, you have a choice of using our own local 
 
 ### Local environment
 
-You can find jQuery included in most of the popular package managers. For Windows I am using [Chocolatey](https://chocolatey.org/)
+You can find jQuery included in most of the popular package managers. For Windows you can leverage [Chocolatey](https://chocolatey.org/)
 
 ```powershell
 choco install jq
@@ -117,7 +114,7 @@ jq --version
 jq-1.6
 ```
 
-For Ubuntu, you can use apt
+For Ubuntu, you can use apt.
 ```bash
 apt-get install jq
 jq --version
@@ -430,13 +427,4 @@ jq -r '{id: .id, hashtags: .entities.hashtags}
 501064197632167940,"uniteblue"
 /* Output omitted*/
 ```
-
-
-### Grouping and Counting
-
-#### Extracting user data
-
-#### Couting Twitter hashtags
-
-
 
